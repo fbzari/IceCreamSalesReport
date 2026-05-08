@@ -1,0 +1,744 @@
+﻿@using IceCreamSales.DTOs
+@model DashboardReportDto
+@{
+    Layout = null;
+    var generatedDate = DateTime.Now.ToString("MMMM dd, yyyy");
+    var generatedTime = DateTime.Now.ToString("hh:mm tt");
+
+    var peakMonth    = Model.MonthlySales.OrderByDescending(m => m.TotalSales).FirstOrDefault();
+    var growingItems = Model.GrowthItems.Count(g => g.GrowthPercentage > 0);
+    var decliningItems = Model.GrowthItems.Count(g => g.GrowthPercentage < 0);
+    var hasErrors    = Model.ValidationErrors.Any();
+    var errorCount   = Model.ValidationErrors.Count();
+    var distinctMonthsWithPopularity = Model.PopularItems.Select(p => p.Month).Distinct().Count();
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Dashboard Report · @generatedDate</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@@9..144,300;9..144,600;9..144,700&family=Inter:wght@@300;400;500;600&display=swap" rel="stylesheet" />
+    <style>
+
+        /* ── Reset ────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ── Tokens ───────────────────────────────────────────── */
+        :root {
+            --page-w:       780px;
+            --ink:          #111827;
+            --ink-2:        #374151;
+            --ink-3:        #6B7280;
+            --ink-4:        #9CA3AF;
+            --line:         #E5E7EB;
+            --surface:      #F9FAFB;
+            --white:        #FFFFFF;
+            --navy:         #0F2D52;
+            --navy-mid:     #1A4A82;
+            --gold:         #C8871A;
+            --gold-pale:    #FEF3DC;
+            --teal:         #0D6B6E;
+            --teal-pale:    #D0F0F0;
+            --rose:         #B91C1C;
+            --rose-pale:    #FEE2E2;
+            --green:        #166534;
+            --green-pale:   #DCFCE7;
+            --amber:        #92400E;
+            --amber-pale:   #FEF3C7;
+        }
+
+        /* ── Base ─────────────────────────────────────────────── */
+        body {
+            font-family: 'Inter', sans-serif;
+            font-size: 12.5px;
+            line-height: 1.55;
+            color: var(--ink);
+            background: var(--white);
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        .page { width: var(--page-w); margin: 0 auto; }
+
+        /* ════════════════════════════════════════════════════════
+           HEADER
+        ════════════════════════════════════════════════════════ */
+        .header {
+            display: flex;
+            min-height: 124px;
+            background: var(--navy);
+        }
+
+        .header-bar {
+            width: 8px;
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #E8A83A 0%, var(--gold) 100%);
+        }
+
+        .header-body {
+            flex: 1;
+            padding: 28px 36px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Decorative rings */
+        .header-body::before {
+            content: '';
+            position: absolute;
+            right: -28px; top: -50px;
+            width: 180px; height: 180px;
+            border-radius: 50%;
+            border: 28px solid rgba(200,135,26,.12);
+        }
+        .header-body::after {
+            content: '';
+            position: absolute;
+            right: 65px; bottom: -68px;
+            width: 140px; height: 140px;
+            border-radius: 50%;
+            border: 20px solid rgba(255,255,255,.05);
+        }
+
+        .header-left { position: relative; z-index: 1; }
+
+        .header-eyebrow {
+            font-size: 9px;
+            font-weight: 600;
+            letter-spacing: 2.5px;
+            text-transform: uppercase;
+            color: var(--gold);
+            margin-bottom: 10px;
+        }
+
+        .header-title {
+            font-family: 'Fraunces', serif;
+            font-size: 30px;
+            font-weight: 700;
+            color: var(--white);
+            line-height: 1.08;
+            margin-bottom: 10px;
+        }
+        .header-title em { font-style: normal; color: var(--gold); }
+
+        .header-sub {
+            font-size: 11.5px;
+            color: rgba(255,255,255,.4);
+            font-weight: 300;
+            letter-spacing: .3px;
+        }
+
+        .header-right {
+            position: relative; z-index: 1;
+            display: flex; flex-direction: column;
+            align-items: flex-end; gap: 12px;
+        }
+
+        .stamp {
+            background: rgba(255,255,255,.07);
+            border: 1px solid rgba(255,255,255,.12);
+            border-radius: 8px;
+            padding: 10px 16px;
+            text-align: right;
+        }
+        .stamp-label {
+            font-size: 8.5px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: rgba(255,255,255,.3); margin-bottom: 3px;
+        }
+        .stamp-date {
+            font-family: 'Fraunces', serif;
+            font-size: 15px; font-weight: 600; color: var(--white);
+        }
+        .stamp-time { font-size: 11px; color: rgba(255,255,255,.35); margin-top: 2px; }
+
+        .err-badge {
+            background: rgba(185,28,28,.18);
+            border: 1px solid rgba(185,28,28,.35);
+            border-radius: 6px;
+            padding: 7px 14px;
+            text-align: center;
+        }
+        .err-badge-label {
+            font-size: 8.5px; font-weight: 600;
+            letter-spacing: 1.5px; text-transform: uppercase;
+            color: #FCA5A5; margin-bottom: 3px;
+        }
+        .err-badge-count {
+            font-family: 'Fraunces', serif;
+            font-size: 20px; font-weight: 700; color: #FCA5A5; line-height: 1;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           KPI BAND
+        ════════════════════════════════════════════════════════ */
+        .kpi-band {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            background: var(--ink);
+        }
+
+        .kpi {
+            padding: 16px 20px 13px;
+            border-right: 1px solid rgba(255,255,255,.07);
+            position: relative;
+        }
+        .kpi:last-child { border-right: none; }
+
+        .kpi-label {
+            font-size: 8.5px; font-weight: 600;
+            letter-spacing: 1.8px; text-transform: uppercase;
+            color: rgba(255,255,255,.3); margin-bottom: 5px;
+        }
+        .kpi-value {
+            font-family: 'Fraunces', serif;
+            font-size: 22px; font-weight: 700; color: var(--white); line-height: 1;
+        }
+        .kpi-sub {
+            font-size: 10px; color: rgba(255,255,255,.28);
+            margin-top: 4px; white-space: nowrap;
+            overflow: hidden; text-overflow: ellipsis;
+        }
+        .kpi-dot {
+            position: absolute; bottom: 0; left: 0;
+            height: 3px; width: 100%;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           BODY
+        ════════════════════════════════════════════════════════ */
+        .body { padding: 32px 36px 0; }
+
+        /* ── Section ──────────────────────────────────────────── */
+        .section { margin-bottom: 32px; }
+
+        .sec-head {
+            display: flex; align-items: center; gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .sec-icon {
+            width: 26px; height: 26px; border-radius: 6px;
+            display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .sec-title {
+            font-family: 'Fraunces', serif;
+            font-size: 14.5px; font-weight: 600; color: var(--ink); letter-spacing: .1px;
+        }
+
+        .sec-badge {
+            margin-left: auto;
+            font-size: 9px; font-weight: 600;
+            letter-spacing: 1px; text-transform: uppercase;
+            padding: 3px 9px; border-radius: 20px;
+        }
+
+        .sec-rule {
+            height: 1.5px;
+            background: linear-gradient(90deg, var(--line) 70%, transparent 100%);
+            margin-bottom: 13px;
+        }
+
+        /* ── Tables ───────────────────────────────────────────── */
+        table { width: 100%; border-collapse: collapse; }
+
+        thead tr { background: var(--surface); }
+
+        th {
+            font-size: 9px; font-weight: 600;
+            letter-spacing: 1.3px; text-transform: uppercase;
+            color: var(--ink-3); padding: 8px 11px;
+            text-align: left;
+            border-bottom: 1.5px solid var(--line);
+        }
+        th.r { text-align: right; }
+        th.c { text-align: center; }
+
+        td {
+            padding: 8.5px 11px;
+            font-size: 12px; color: var(--ink-2);
+            border-bottom: 1px solid var(--line);
+            vertical-align: middle;
+        }
+        td.r  { text-align: right; font-variant-numeric: tabular-nums; }
+        td.c  { text-align: center; }
+        td.em { font-weight: 600; color: var(--ink); }
+
+        tbody tr:last-child td { border-bottom: none; }
+        tbody tr:nth-child(even) { background: #FAFBFC; }
+
+        /* ── Rank badge ───────────────────────────────────────── */
+        .rk {
+            display: inline-flex; align-items: center; justify-content: center;
+            width: 20px; height: 20px; border-radius: 50%;
+            font-size: 9.5px; font-weight: 700;
+            background: var(--surface); color: var(--ink-3);
+            border: 1px solid var(--line);
+        }
+        .rk.g1 { background: #FDE68A; color: #78350F; border-color: #F59E0B; }
+        .rk.g2 { background: #E5E7EB; color: #374151; border-color: #9CA3AF; }
+        .rk.g3 { background: #FCD9C0; color: #7C2D12; border-color: #F97316; }
+
+        /* ── SKU chip ─────────────────────────────────────────── */
+        .sku {
+            display: inline-block;
+            font-family: 'Courier New', monospace;
+            font-size: 10.5px; font-weight: 700;
+            background: var(--surface); color: var(--navy-mid);
+            border: 1px solid var(--line);
+            padding: 1px 7px; border-radius: 4px; letter-spacing: .4px;
+        }
+
+        /* ── Month chip ───────────────────────────────────────── */
+        .mo {
+            display: inline-block;
+            font-size: 10px; font-weight: 500;
+            color: var(--ink-3); background: var(--surface);
+            border: 1px solid var(--line);
+            padding: 1px 7px; border-radius: 4px;
+        }
+
+        /* ── Bar ──────────────────────────────────────────────── */
+        .bar-wrap { min-width: 90px; }
+        .bar-track { height: 5px; background: var(--line); border-radius: 3px; overflow: hidden; }
+        .bar-fill  { height: 100%; border-radius: 3px; }
+        .bar-sub   { font-size: 9px; color: var(--ink-4); margin-top: 2px; }
+
+        /* ── Growth pill ──────────────────────────────────────── */
+        .pill {
+            display: inline-flex; align-items: center; gap: 3px;
+            padding: 2px 8px; border-radius: 20px;
+            font-size: 10.5px; font-weight: 600; white-space: nowrap;
+        }
+        .pill.up   { background: var(--green-pale); color: var(--green); }
+        .pill.down { background: var(--rose-pale);  color: var(--rose); }
+        .pill.flat { background: var(--surface); color: var(--ink-3); border: 1px solid var(--line); }
+
+        /* ── Stat min/max ─────────────────────────────────────── */
+        .stat-pair { display: flex; gap: 6px; justify-content: center; }
+        .stat-box  { padding: 1px 6px; border-radius: 4px; font-size: 10.5px; font-weight: 500; }
+        .stat-mn   { background: #EFF6FF; color: #1D4ED8; }
+        .stat-mx   { background: #F0FDF4; color: #15803D; }
+
+        /* ── Error cells ──────────────────────────────────────── */
+        .err-type {
+            display: inline-block;
+            font-size: 9px; font-weight: 700;
+            letter-spacing: .6px; text-transform: uppercase;
+            padding: 2px 7px; border-radius: 4px;
+            background: var(--rose-pale); color: var(--rose);
+        }
+        .row-num {
+            font-family: 'Courier New', monospace;
+            font-size: 10px; font-weight: 700; color: var(--ink-3);
+        }
+
+        /* ── Empty state ──────────────────────────────────────── */
+        .empty {
+            text-align: center; padding: 24px;
+            color: var(--ink-4); font-size: 11.5px;
+            background: var(--surface);
+            border: 1px dashed var(--line); border-radius: 6px;
+        }
+
+        /* ════════════════════════════════════════════════════════
+           FOOTER
+        ════════════════════════════════════════════════════════ */
+        .footer {
+            margin-top: 40px;
+            padding: 16px 36px;
+            border-top: 1.5px solid var(--line);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .footer-brand {
+            font-family: 'Fraunces', serif;
+            font-size: 13px; font-weight: 600; color: var(--navy);
+        }
+        .footer-note { font-size: 10px; color: var(--ink-4); margin-top: 2px; }
+        .footer-r    { font-size: 10px; color: var(--ink-4); text-align: right; line-height: 1.6; }
+
+        @@media print {
+            .page { width: 100%; }
+            .section { page-break-inside: avoid; }
+        }
+
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- ══ HEADER ═══════════════════════════════════════════════════ -->
+    <div class="header">
+        <div class="header-bar"></div>
+        <div class="header-body">
+            <div class="header-left">
+                <div class="header-eyebrow">Performance Intelligence</div>
+                <div class="header-title">Dashboard<br /><em>Analytics Report</em></div>
+                <div class="header-sub">Sales · Revenue · Growth · Validation</div>
+            </div>
+            <div class="header-right">
+                <div class="stamp">
+                    <div class="stamp-label">Generated</div>
+                    <div class="stamp-date">@generatedDate</div>
+                    <div class="stamp-time">@generatedTime</div>
+                </div>
+                @if (hasErrors)
+                {
+                    <div class="err-badge">
+                        <div class="err-badge-label">Data Issues</div>
+                        <div class="err-badge-count">@errorCount</div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ KPI BAND ══════════════════════════════════════════════════ -->
+    <div class="kpi-band">
+        <div class="kpi">
+            <div class="kpi-label">Total Sales</div>
+            <div class="kpi-value">@Model.TotalSales.ToString("C0")</div>
+            <div class="kpi-sub">Overall revenue</div>
+            <div class="kpi-dot" style="background:var(--gold);"></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Peak Month</div>
+            <div class="kpi-value">@(peakMonth?.TotalSales.ToString("C0") ?? "—")</div>
+            <div class="kpi-sub">@(peakMonth?.Month ?? "N/A")</div>
+            <div class="kpi-dot" style="background:#3B82F6;"></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Growing SKUs</div>
+            <div class="kpi-value">@growingItems</div>
+            <div class="kpi-sub">@decliningItems declining</div>
+            <div class="kpi-dot" style="background:#22C55E;"></div>
+        </div>
+        <div class="kpi">
+            <div class="kpi-label">Months Tracked</div>
+            <div class="kpi-value">@Model.MonthlySales.Count()</div>
+            <div class="kpi-sub">@distinctMonthsWithPopularity with popularity data</div>
+            <div class="kpi-dot" style="background:var(--teal);"></div>
+        </div>
+    </div>
+
+    <!-- ══ BODY ══════════════════════════════════════════════════════ -->
+    <div class="body">
+
+        <!-- ── 1. Monthly Sales ─────────────────────────────────────── -->
+        <div class="section">
+            <div class="sec-head">
+                <div class="sec-icon" style="background:#DBEAFE;">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M1 10.5 L4 7 L7 8.5 L10 4 L13 6" stroke="#2563EB" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <circle cx="13" cy="6" r="1.1" fill="#2563EB"/>
+                    </svg>
+                </div>
+                <span class="sec-title">Monthly Sales</span>
+                <span class="sec-badge" style="background:#DBEAFE;color:#1D4ED8;">@Model.MonthlySales.Count() months</span>
+            </div>
+            <div class="sec-rule"></div>
+
+            @if (!Model.MonthlySales.Any())
+            {
+                <div class="empty">No monthly sales data available.</div>
+            }
+            else
+            {
+                var maxSale     = Model.MonthlySales.Max(m => m.TotalSales);
+                var totalAllSales = Model.MonthlySales.Sum(m => m.TotalSales);
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width:36px;" class="c">#</th>
+                            <th>Month</th>
+                            <th class="r">Total Sales</th>
+                            <th class="r">Share</th>
+                            <th style="width:160px;">Distribution</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int mi = 0; }
+                        @foreach (var m in Model.MonthlySales.OrderByDescending(x => x.TotalSales))
+                        {
+                            mi++;
+                            var barPct   = maxSale > 0 ? (double)m.TotalSales / (double)maxSale * 100 : 0;
+                            var sharePct = totalAllSales > 0 ? (double)m.TotalSales / (double)totalAllSales * 100 : 0;
+                            <tr>
+                                <td class="c"><span class="rk @(mi==1?"g1":mi==2?"g2":mi==3?"g3":"")">@mi</span></td>
+                                <td class="em">@m.Month</td>
+                                <td class="r em">@m.TotalSales.ToString("C0")</td>
+                                <td class="r" style="color:var(--ink-3);">@sharePct.ToString("F1")%</td>
+                                <td>
+                                    <div class="bar-wrap">
+                                        <div class="bar-track">
+                                            <div class="bar-fill" style="width:@barPct.ToString("F1")%;background:#3B82F6;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- ── 2. Popular Items ─────────────────────────────────────── -->
+        <div class="section">
+            <div class="sec-head">
+                <div class="sec-icon" style="background:var(--amber-pale);">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M7 1.5 L8.4 5H13 L9.5 7.5 L11 12 L7 9.5 L3 12 L4.5 7.5 L1 5H5.6Z" fill="#D97706" stroke="#D97706" stroke-width=".3" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="sec-title">Popular Items by Month</span>
+                <span class="sec-badge" style="background:var(--amber-pale);color:var(--amber);">@Model.PopularItems.Count() records</span>
+            </div>
+            <div class="sec-rule"></div>
+
+            @if (!Model.PopularItems.Any())
+            {
+                <div class="empty">No popular items data available.</div>
+            }
+            else
+            {
+                var maxQty = Model.PopularItems.Max(p => p.TotalQuantitySold);
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="c">#</th>
+                            <th>Month</th>
+                            <th>SKU</th>
+                            <th class="r">Qty Sold</th>
+                            <th class="r">Avg Orders</th>
+                            <th class="c">Min / Max</th>
+                            <th style="width:110px;">Volume</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int pi = 0; }
+                        @foreach (var item in Model.PopularItems.OrderByDescending(x => x.TotalQuantitySold))
+                        {
+                            pi++;
+                            var barPct = maxQty > 0 ? (double)item.TotalQuantitySold / (double)maxQty * 100 : 0;
+                            <tr>
+                                <td class="c"><span class="rk @(pi==1?"g1":pi==2?"g2":pi==3?"g3":"")">@pi</span></td>
+                                <td><span class="mo">@item.Month</span></td>
+                                <td><span class="sku">@item.SKU</span></td>
+                                <td class="r em">@item.TotalQuantitySold.ToString("N0")</td>
+                                <td class="r" style="color:var(--ink-3);">@item.AverageOrders.ToString("F1")</td>
+                                <td>
+                                    <div class="stat-pair">
+                                        <span class="stat-box stat-mn">↓ @item.MinOrders</span>
+                                        <span class="stat-box stat-mx">↑ @item.MaxOrders</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="bar-wrap">
+                                        <div class="bar-track">
+                                            <div class="bar-fill" style="width:@barPct.ToString("F1")%;background:#F59E0B;"></div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- ── 3. Highest Revenue Items ─────────────────────────────── -->
+        <div class="section">
+            <div class="sec-head">
+                <div class="sec-icon" style="background:var(--teal-pale);">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <circle cx="7" cy="7" r="5.2" stroke="#0D6B6E" stroke-width="1.3"/>
+                        <path d="M7 4.2v.9M7 9.8v-.9M5.2 7h.7c0-.65.55-1.05 1.1-1.05S8.1 6.35 8.1 7s-.55 1.05-1.1 1.05H6.3c-.55 0-1.1.4-1.1 1.05s.55 1.05 1.1 1.05h1.5" stroke="#0D6B6E" stroke-width="1.1" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="sec-title">Highest Revenue Items</span>
+                <span class="sec-badge" style="background:var(--teal-pale);color:var(--teal);">@Model.HighestRevenueItems.Count() records</span>
+            </div>
+            <div class="sec-rule"></div>
+
+            @if (!Model.HighestRevenueItems.Any())
+            {
+                <div class="empty">No revenue items data available.</div>
+            }
+            else
+            {
+                var maxRev = Model.HighestRevenueItems.Max(r => r.Revenue);
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="c">#</th>
+                            <th>Month</th>
+                            <th>SKU</th>
+                            <th class="r">Revenue</th>
+                            <th style="width:150px;">Share of Peak</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int ri = 0; }
+                        @foreach (var rev in Model.HighestRevenueItems.OrderByDescending(x => x.Revenue))
+                        {
+                            ri++;
+                            var barPct = maxRev > 0 ? (double)rev.Revenue / (double)maxRev * 100 : 0;
+                            <tr>
+                                <td class="c"><span class="rk @(ri==1?"g1":ri==2?"g2":ri==3?"g3":"")">@ri</span></td>
+                                <td><span class="mo">@rev.Month</span></td>
+                                <td><span class="sku">@rev.SKU</span></td>
+                                <td class="r em" style="color:var(--teal);">@rev.Revenue.ToString("C0")</td>
+                                <td>
+                                    <div class="bar-wrap">
+                                        <div class="bar-track">
+                                            <div class="bar-fill" style="width:@barPct.ToString("F1")%;background:#0D9488;"></div>
+                                        </div>
+                                        <div class="bar-sub">@barPct.ToString("F0")% of peak</div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- ── 4. SKU Growth ────────────────────────────────────────── -->
+        <div class="section">
+            <div class="sec-head">
+                <div class="sec-icon" style="background:var(--green-pale);">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                        <path d="M1 10 L4.5 6.5 L7.5 8 L12.5 3" stroke="#166534" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M10 3 H12.5 V5.5" stroke="#166534" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </div>
+                <span class="sec-title">SKU Growth Analysis</span>
+                <span class="sec-badge" style="background:var(--green-pale);color:var(--green);">@Model.GrowthItems.Count() SKUs</span>
+            </div>
+            <div class="sec-rule"></div>
+
+            @if (!Model.GrowthItems.Any())
+            {
+                <div class="empty">No growth data available.</div>
+            }
+            else
+            {
+                <table>
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Period</th>
+                            <th class="r">Prev Revenue</th>
+                            <th class="r">Curr Revenue</th>
+                            <th class="r">Δ Change</th>
+                            <th class="r">Growth %</th>
+                            <th class="c">Signal</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var g in Model.GrowthItems.OrderByDescending(x => x.GrowthPercentage))
+                        {
+                            var diff       = g.CurrentRevenue - g.PreviousRevenue;
+                            var pillCls    = g.GrowthPercentage > 0 ? "up" : g.GrowthPercentage < 0 ? "down" : "flat";
+                            var arrow      = g.GrowthPercentage > 0 ? "▲" : g.GrowthPercentage < 0 ? "▼" : "—";
+                            string signal; string sigColor;
+                            if      (g.GrowthPercentage >= 20)      { signal = "Strong ↑";   sigColor = "#166534"; }
+                            else if (g.GrowthPercentage > 0)        { signal = "Growing";    sigColor = "#15803D"; }
+                            else if (g.GrowthPercentage == 0)       { signal = "Flat";       sigColor = "#6B7280"; }
+                            else if (g.GrowthPercentage > -20)      { signal = "Declining";  sigColor = "#B45309"; }
+                            else                                     { signal = "Sharp ↓";   sigColor = "#B91C1C"; }
+                            <tr>
+                                <td><span class="sku">@g.SKU</span></td>
+                                <td style="font-size:11px;color:var(--ink-3);">
+                                    @g.PreviousMonth <span style="opacity:.35;">→</span> @g.CurrentMonth
+                                </td>
+                                <td class="r" style="color:var(--ink-3);">@g.PreviousRevenue.ToString("C0")</td>
+                                <td class="r em">@g.CurrentRevenue.ToString("C0")</td>
+                                <td class="r" style="color:@(diff>=0?"#166534":"#B91C1C");font-weight:600;">
+                                    @(diff >= 0 ? "+" : "")@diff.ToString("C0")
+                                </td>
+                                <td class="r">
+                                    <span class="pill @pillCls">@arrow @Math.Abs(g.GrowthPercentage).ToString("F1")%</span>
+                                </td>
+                                <td class="c">
+                                    <span style="font-size:10.5px;font-weight:600;color:@sigColor;">@signal</span>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+        </div>
+
+        <!-- ── 5. Validation Errors (conditional) ───────────────────── -->
+        @if (hasErrors)
+        {
+            <div class="section">
+                <div class="sec-head">
+                    <div class="sec-icon" style="background:var(--rose-pale);">
+                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+                            <path d="M7 1.5 L13 12.5 H1 Z" stroke="#B91C1C" stroke-width="1.3" stroke-linejoin="round" fill="#FEE2E2"/>
+                            <path d="M7 5.5 v3 M7 10 v.6" stroke="#B91C1C" stroke-width="1.2" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <span class="sec-title">Validation Issues</span>
+                    <span class="sec-badge" style="background:var(--rose-pale);color:var(--rose);">@errorCount issues</span>
+                </div>
+                <div class="sec-rule"></div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th class="c">Row</th>
+                            <th>Error Type</th>
+                            <th>Message</th>
+                            <th>SKU</th>
+                            <th>Raw Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var err in Model.ValidationErrors.OrderBy(e => e.RowNumber))
+                        {
+                            <tr>
+                                <td class="c"><span class="row-num">#@err.RowNumber</span></td>
+                                <td><span class="err-type">@err.ErrorType</span></td>
+                                <td style="font-size:11.5px;color:var(--rose);">@err.Message</td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(err.SKU))
+                                    { <span class="sku">@err.SKU</span> }
+                                    else
+                                    { <span style="color:var(--ink-4);font-size:11px;">—</span> }
+                                </td>
+                                <td style="font-size:11px;color:var(--ink-3);font-family:'Courier New',monospace;">
+                                    @(string.IsNullOrEmpty(err.RawDate) ? "—" : err.RawDate)
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+    </div><!-- /body -->
+
+    <!-- ══ FOOTER ════════════════════════════════════════════════════ -->
+    <div class="footer">
+        <div>
+            <div class="footer-brand">Analytics Suite</div>
+            <div class="footer-note">Confidential · Internal Use Only</div>
+        </div>
+        <div class="footer-r">
+            <div>@generatedDate · @generatedTime</div>
+            <div>Dashboard Performance Report</div>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
