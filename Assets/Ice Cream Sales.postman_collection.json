@@ -1,0 +1,163 @@
+{
+  "info": {
+    "_postman_id": "3f96e524-4f00-4322-a3f0-916deb7084e9",
+    "name": "Ice Cream Sales",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "40295307"
+  },
+  "item": [
+    {
+      "name": "Total Sales",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/total-sales",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "total-sales"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Monthly Sales",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/monthly-sales",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "monthly-sales"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "popular-items",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/popular-items",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "popular-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "highest-revenue-items",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/highest-revenue-items",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "highest-revenue-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "growth",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/highest-revenue-items",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "highest-revenue-items"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "validation-errors",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/validation-errors",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "validation-errors"
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Dashboard",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://localhost:7101/api/reports/dashboard",
+          "protocol": "https",
+          "host": [
+            "localhost"
+          ],
+          "port": "7101",
+          "path": [
+            "api",
+            "reports",
+            "dashboard"
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "url",
+      "value": "https://a4231dac-d576-4dd0-a267-c7279b3bbb93.mock.pstmn.io"
+    }
+  ]
+}
