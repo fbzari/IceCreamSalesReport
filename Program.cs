@@ -1,5 +1,6 @@
 using IceCreamSales.Endpoints;
 using IceCreamSales.Services;
+using Scalar.AspNetCore;
 
 /// This Repo Contains the Sales Report Assessment
 /// 
@@ -23,8 +24,9 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference();
 }
-
+app.MapGet("/", () => Results.Redirect("/scalar/v1"));
 app.UseHttpsRedirection();
 app.MapReportEndpoints();
 app.Run();
